@@ -5,9 +5,10 @@ import { Amplify } from "aws-amplify";
 import { Schema } from "../amplify/data/resource";
 import { generateClient } from "aws-amplify/data";
 import outputs from "../amplify_outputs.json";
-
-
+import { uploadData } from "aws-amplify/storage";
+import { StorageBrowser } from "@aws-amplify/ui-react-storage";
 import "@aws-amplify/ui-react/styles.css";
+
 
 Amplify.configure(outputs);
 
@@ -18,14 +19,33 @@ const amplifyClient = generateClient<Schema>({
 function App() {
   const [result, setResult] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  const [file, setFile] = useState<File | undefined>();
 
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files) {
+      setFile(files[0]);
+    }
+  };
+  const handleUpload = () => {
+    if (file) {
+      // file が undefined でないことを確認
+      uploadData({
+        path: `picture-submissions/${file.name}`,
+        data: file,
+      });
+      alert(`${file.name}がアップロードされました。`);
+    } else {
+      alert(`ファイルが選択されていません。`);
+    }
+  };
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setLoading(true);
 
     try {
       const formData = new FormData(event.currentTarget);
-      
+
       const { data, errors } = await amplifyClient.queries.askBedrock({
         ingredients: [formData.get("ingredients")?.toString() || ""],
       });
@@ -35,8 +55,6 @@ function App() {
       } else {
         console.log(errors);
       }
-
-  
     } catch (e) {
       alert(`An error occurred: ${e}`);
     } finally {
@@ -84,6 +102,11 @@ function App() {
         ) : (
           result && <p className="result">{result}</p>
         )}
+      </div>
+      <StorageBrowser />
+      <div>
+        <input type="file" onChange={handleChange} />
+        <button onClick={handleUpload}>Upload</button>
       </div>
     </div>
   );

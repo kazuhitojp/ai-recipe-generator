@@ -8,7 +8,6 @@ import outputs from "../amplify_outputs.json";
 
 
 import "@aws-amplify/ui-react/styles.css";
-import { StorageBrowser } from "@aws-amplify/ui-react-storage";
 
 Amplify.configure(outputs);
 
@@ -86,7 +85,6 @@ function App() {
           result && <p className="result">{result}</p>
         )}
       </div>
-      <StorageBrowser/>
     </div>
   );
 }
